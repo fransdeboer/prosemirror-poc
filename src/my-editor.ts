@@ -21,20 +21,18 @@ export class MyEditor extends LitElement {
     });
 
     const that = this;
-
     window.view = new EditorView(this.editorRoot, {
       state: EditorState.create({
         doc: DOMParser.fromSchema(mySchema).parse(this.editorRoot),
         plugins: exampleSetup({ schema: mySchema })
       }),
       dispatchTransaction(transaction) {
-        
         const newState = window.view.state.apply(transaction);
         window.view.updateState(newState);
-
         if (transaction.docChanged) {
-             that.value = that.getHTML1(newState);
-             console.log(that.value);
+          that.value = that.getHTML1(newState);
+          that.dispatchEvent(new CustomEvent('valueChange', { detail: { value: that.value } }));
+          //  console.log(that.value);
         }
       }
     });
@@ -42,10 +40,7 @@ export class MyEditor extends LitElement {
 
   render() {
     return html`
-      <button @click=${this.getSource}>Get value</button>
-      
       <div id="editor"></div>
-
     `;
   }
 
