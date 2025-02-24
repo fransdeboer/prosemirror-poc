@@ -1,22 +1,23 @@
-import { LitElement, css, html } from 'lit'
-import { customElement, property, query, state } from 'lit/decorators.js'
-import { exampleSetup } from "prosemirror-example-setup"
-import { DOMParser, DOMSerializer, Schema } from "prosemirror-model"
-import { schema } from "prosemirror-schema-basic"
-import { addListNodes } from "prosemirror-schema-list"
-import { EditorState } from "prosemirror-state"
-import { EditorView } from "prosemirror-view"
+import { css, html, LitElement } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
+import { exampleSetup } from 'prosemirror-example-setup';
+import { DOMParser, DOMSerializer, Schema } from 'prosemirror-model';
+import { schema } from 'prosemirror-schema-basic';
+import { addListNodes } from 'prosemirror-schema-list';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { selectionSizePlugin } from './tooltip-plugin';
 
 @customElement('my-editor')
 export class MyEditor extends LitElement {
 
-  @query("#editor") editorRoot!: HTMLElement;
+  @query('#editor') editorRoot!: HTMLElement;
 
   @property({ type: String }) value = '';
 
   firstUpdated(): void {
     const mySchema = new Schema({
-      nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
+      nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
       marks: schema.spec.marks
     });
 
@@ -24,7 +25,7 @@ export class MyEditor extends LitElement {
     window.view = new EditorView(this.editorRoot, {
       state: EditorState.create({
         doc: DOMParser.fromSchema(mySchema).parse(this.editorRoot),
-        plugins: exampleSetup({ schema: mySchema })
+        plugins: exampleSetup({ schema: mySchema }).concat(selectionSizePlugin)
       }),
       dispatchTransaction(transaction) {
         const newState = window.view.state.apply(transaction);
@@ -32,7 +33,6 @@ export class MyEditor extends LitElement {
         if (transaction.docChanged) {
           that.value = that.getHTML1(newState);
           that.dispatchEvent(new CustomEvent('valueChange', { detail: { value: that.value } }));
-          //  console.log(that.value);
         }
       }
     });
