@@ -16,6 +16,7 @@ class SelectionSizeTooltip {
     this.update(view, null);
   }
 
+
   update(view: EditorView, lastState: EditorState | null) {
     let state = view.state
     // Don't do anything if the document/selection didn't change
@@ -42,7 +43,7 @@ class SelectionSizeTooltip {
     let left = Math.max((start.left + end.left) / 2, start.left + 3)
     this.tooltip.style.left = (left - box.left) + 'px';
     this.tooltip.style.bottom = (box.bottom - start.top) + 'px';
-    this.tooltip.textContent = to - from
+    this.tooltip.textContent = String(to - from);
   }
 
   destroy() {

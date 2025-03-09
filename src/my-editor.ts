@@ -13,7 +13,15 @@ export class MyEditor extends LitElement {
 
   @query('#editor') editorRoot!: HTMLElement;
 
+  private editorView?: EditorView;
+
   @property({ type: String }) value = '';
+
+  
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.editorView?.destroy();
+}
 
   firstUpdated(): void {
     const mySchema = new Schema({
@@ -22,17 +30,19 @@ export class MyEditor extends LitElement {
     });
 
     const that = this;
-    window.view = new EditorView(this.editorRoot, {
+    this.editorView = new EditorView(this.editorRoot, {
       state: EditorState.create({
         doc: DOMParser.fromSchema(mySchema).parse(this.editorRoot),
         plugins: exampleSetup({ schema: mySchema }).concat(selectionSizePlugin)
       }),
       dispatchTransaction(transaction) {
-        const newState = window.view.state.apply(transaction);
-        window.view.updateState(newState);
-        if (transaction.docChanged) {
-          that.value = that.getHTML1(newState);
-          that.dispatchEvent(new CustomEvent('valueChange', { detail: { value: that.value } }));
+        if (that.editorView) {
+          const newState = that.editorView.state.apply(transaction);
+          that.editorView.updateState(newState);
+          if (transaction.docChanged) {
+            that.value = that.getHTMLContent(newState);
+            that.dispatchEvent(new CustomEvent('valueChange', { detail: { value: that.value } }));
+          }
         }
       }
     });
@@ -45,14 +55,14 @@ export class MyEditor extends LitElement {
   }
 
   getSource(): void {
-    if (window.view?.state) {
-      const state = window.view.state;
-      this.getHTML1(state);
+    if (this.editorView?.state) {
+      const state = this.editorView?.state;
+      this.getHTMLContent(state);
     }
   }
 
 
-  getHTML1(state: EditorState): string {
+  getHTMLContent(state: EditorState): string {
     const fragment = DOMSerializer.fromSchema(state.schema).serializeFragment(state.doc.content);
     const element = document.createElement('div');
 
